@@ -29,7 +29,11 @@ projectItems.forEach(projectItem => {
 
     const newUrlDiv = document.createElement("div");
     newUrlDiv.classList.add("projectUrl");
-    newUrlDiv.textContent = "<a href =" + urlText + "></a>";
+    const newUrlAnchor = document.createElement("a");
+    newUrlAnchor.href = urlText;
+    newUrlAnchor.textContent = "Link";
+    newUrlAnchor.title = "Go to Link...";
+    newUrlDiv.appendChild(newUrlAnchor);
 
     const newDescriptionDiv = document.createElement("div");
     newDescriptionDiv.classList.add("projectDescription");
