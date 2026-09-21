@@ -71,52 +71,77 @@ class DatabseObject{
 }
 
 class Testimonial extends DatabseObject{
-    constructor(newReferenceId, newComment, newRating){
-        this.referenceId = newReferenceId;
+    constructor(newReference, newComment, newRating){
+        super();
+        this.reference = newReference;
         this.comment = newComment;
         this.rating = newRating;
     }
-    toString(){}
+    toString(){
+        return this.comment + " - " + this.reference + " " + this.rating;
+    }
+    // static create(params){
+    //     const {reference, comment, rating} = params;
+    //     const newTestimonial = new Testimonial(reference, comment, rating);
+    //     return newTestimonial;
+    // }
+    // The above is Javascript Object Destructuring, below does a similar thing
+    // static create(newReferenceObj, newComment, newRating){
+    //      const newObj = new Testimonial(newReferenceObj, newComment, newRating);
+    //      return newObj;
+    // }
 }
 
 class Reference extends DatabseObject{
     constructor(newName, newCompany, newEmail){
+        super();
         this.name = newName;
         this.company = newCompany;
         this.email = newEmail;
-
-        //optional Company Handling
-        if (company == "null"){
-            //do something to hide company field in html, probably not here but later...
-        }
     }
     toString(){
         if(company){
             return "Name: " + this.name + " Company: " + this.company + " Contact: " + this.email;
         }
+        else{
+            return "Name: " + this.name + " Contact: " + this.email;
+        }
     }
+    // static create(params){
+    //     const {name, company, email} = params;
+    //     const newReference = new Reference(name, company, email);
+    //     return newReference;
+    // }
+    // The above is Javascript Object Destructuring, below does a similar thing
+    // static create(newName, newCompany, newEmail){
+    //      const newObj = new Reference(newName, newCompany, newEmail);
+    //      return newObj;
+    // }
 }
 
 class TestimonialDAO{
     static seeds = [
         {
-            referenceId: 0,
+            reference: new Reference("Jeff", "SillyHut", "jeff@jeffcloud.com"),
             comment: "I'm commenting!",
             rating: 100,
         },
         {
-            referenceId: 1,
+            reference: new Reference("Tom", "EB Games", "Tom@jeffcloud.com"),
             comment: "I'm also commenting!",
             rating: 80,
         },
         {
-            referenceId: 2,
+            reference: new Reference("Doug", "Gamestop", "Doug@jeffcloud.com"),
             comment: "I'm the third strongest mole in this dungeon.",
             rating: 90,
         },
     ]
     retrieve(){
         throw new Error("Somebody didn't implement something correctly...");
+    }
+    create(){
+        throw new Error("Somebody didn't implement something correctly...")
     }
 }
 
@@ -141,6 +166,29 @@ class ReferenceDAO{
     retrieve(){
         throw new Error("Somebody didn't implement something correctly...");
     }
+    create(){
+        throw new Error("Somebody didn't implement something correctly...")
+    }
+}
+
+class SessionStorageReferenceDAO extends ReferenceDAO{
+    constructor(){
+        super();
+        this.database = sessionStorage;
+    }
+    store(arrayOfReferences){
+        this.database.setItem("references", JSON.stringify(arrayOfReferences));
+    }
+    retrieve(){
+        const stringReferences = this.database.getItem("references");
+        const objectReferences = JSON.parse(stringReferences);
+        return objectReferences;
+    }
+    static create(params){
+        const {name, company, email} = params;
+        const newReference = new Reference(name, company, email);
+        return newReference;
+    }
 }
 
 class SessionStorageTestimonialDAO extends TestimonialDAO{
@@ -156,7 +204,33 @@ class SessionStorageTestimonialDAO extends TestimonialDAO{
         const objectTestimonies = JSON.parse(stringTestimonies);
         return objectTestimonies;
     }
+    static create(params){
+        const {reference, comment, rating} = params;
+        const newTestimonial = new Testimonial(reference, comment, rating);
+        return newTestimonial;
+    }
 }
+
+class CookieStorageReferenceDAO extends ReferenceDAO{
+    constructor(){
+        super();
+        this.database = document.cookie;
+    }
+    store(arrayOfReferences){
+        document.cookie = 'references=' + JSON.stringify(arrayOfReferences) + '; SameSite=Lax; Secure;';
+    }
+    retrieve(){
+        const cookieValue = document.cookie
+        .split("; ")
+        .find((row) => row.startsWith("references="));
+    }
+    static create(params){
+        const {name, company, email} = params;
+        const newReference = new Reference(name, company, email);
+        return newReference;
+    }
+}
+
 class CookieStorageTestimonialDAO extends TestimonialDAO{
     constructor(){
         super();
@@ -170,30 +244,15 @@ class CookieStorageTestimonialDAO extends TestimonialDAO{
         .split("; ")
         .find((row) => row.startsWith("testimonies="));
     }
-}
-
-class SessionStorageReferenceDAO extends ReferenceDAO{
-    constructor(){
-        super();
-        this.database = sessionStorage;
+    static create(params){
+        const {reference, comment, rating} = params;
+        const newTestimonial = new Testimonial(reference, comment, rating);
+        return newTestimonial;
     }
-    store(arrayOfReferences){}
-    retrieve(){}
-}
-class CookieStorageReferenceDAO extends ReferenceDAO{
-    constructor(){
-        super();
-        this.database = document.cookie;
-    }
-    store(arrayOfReferences){}
-    retrieve(){}
 }
 
-function CreateTestimonial(){
+class CreateTestimonialService{}
 
-}
-
-const test = new SessionStorageTestimonialDAO();
-test.store(TestimonialDAO.seeds);
-console.log("test.retrieve()");
-console.log(test.retrieve()[2].comment);
+const newArray = TestimonialDAO.seeds.map(seed => SessionStorageTestimonialDAO.create(seed));
+//.map calls a function on each element ("seed") of the seeds array- in this case: create()
+console.log(newArray);
