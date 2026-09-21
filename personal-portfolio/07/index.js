@@ -1,0 +1,199 @@
+const projectItems = [
+    {    
+        title: "Game of War",
+        url: "https://github.com/asapjam/btech-software-dev-25-classroom-computer-programming-game-of-war-game-of-war-starter-csharp",
+        description: "The card game War in C#!",
+    },
+    {    
+        title: "Putt Kitty Putt!",
+        url: "https://github.com/Quarz8/projectile-maze-game",
+        description: "My first game! 30 levels of kitty-putting action!",
+    },
+    {    
+        title: "My First Project",
+        url: "http://link.to.my.first.project.com",
+        description: "My first project is the first project I ever made, and it's cool because...",
+    },
+];
+
+const projectTargetDiv = document.getElementById("projectTarget");
+const newUnorderedList = projectTargetDiv.appendChild(document.createElement("ul"));
+
+projectItems.forEach(projectItem => {
+    const titleText = projectItem.title;
+    const urlText = projectItem.url;
+    const descriptionText = projectItem.description;
+
+    const newListElement = document.createElement("li")
+
+    const newTitleDiv = document.createElement("div");
+    newTitleDiv.classList.add("projectTitle");
+    const newTitleHeader = document.createElement("h3");
+    newTitleHeader.textContent = titleText;
+    newTitleDiv.appendChild(newTitleHeader);
+
+    const newUrlDiv = document.createElement("div");
+    newUrlDiv.classList.add("projectUrl");
+    const newUrlAnchor = document.createElement("a");
+    newUrlAnchor.href = urlText;
+    newUrlAnchor.target = "_blank" //new tab on link open
+    newUrlAnchor.textContent = "Link";
+    newUrlAnchor.title = "Go to Link...";
+    newUrlDiv.appendChild(newUrlAnchor);
+
+    const newDescriptionDiv = document.createElement("div");
+    newDescriptionDiv.classList.add("projectDescription");
+    const newParagraph = document.createElement("p")
+    newParagraph.textContent = descriptionText;
+    newDescriptionDiv.appendChild(newParagraph);
+
+    //LISTENER START
+
+    newTitleDiv.addEventListener("click", () => {
+        newTitleDiv.classList.toggle("active");
+        newUrlDiv.classList.toggle("active");
+        newDescriptionDiv.classList.toggle("active");
+    });
+
+    //LISTENER END
+    
+    newListElement.appendChild(newTitleDiv);
+    newListElement.appendChild(newUrlDiv);
+    newListElement.appendChild(newDescriptionDiv);
+
+    newUnorderedList.appendChild(newListElement)
+})
+
+class DatabseObject{
+    toString(){
+        throw new Error("Somebody didn't implement something correctly...")
+    }
+}
+
+class Testimonial extends DatabseObject{
+    constructor(newReferenceId, newComment, newRating){
+        this.referenceId = newReferenceId;
+        this.comment = newComment;
+        this.rating = newRating;
+    }
+    toString(){}
+}
+
+class Reference extends DatabseObject{
+    constructor(newName, newCompany, newEmail){
+        this.name = newName;
+        this.company = newCompany;
+        this.email = newEmail;
+
+        //optional Company Handling
+        if (company == "null"){
+            //do something to hide company field in html, probably not here but later...
+        }
+    }
+    toString(){
+        if(company){
+            return "Name: " + this.name + " Company: " + this.company + " Contact: " + this.email;
+        }
+    }
+}
+
+class TestimonialDAO{
+    static seeds = [
+        {
+            referenceId: 0,
+            comment: "I'm commenting!",
+            rating: 100,
+        },
+        {
+            referenceId: 1,
+            comment: "I'm also commenting!",
+            rating: 80,
+        },
+        {
+            referenceId: 2,
+            comment: "I'm the third strongest mole in this dungeon.",
+            rating: 90,
+        },
+    ]
+    retrieve(){
+        throw new Error("Somebody didn't implement something correctly...");
+    }
+}
+
+class ReferenceDAO{
+    static seeds = [
+        {
+            name: "Jeff",
+            company: "SillyHut",
+            email: "jeff@jeffcloud.com",
+        },
+        {
+            name: "Tom",
+            company: "SillyHut",
+            email: "Tom@jeffcloud.com",
+        },
+        {
+            name: "Doug",
+            company: "SillyHut",
+            email: "Doug@jeffcloud.com",
+        },
+    ]
+    retrieve(){
+        throw new Error("Somebody didn't implement something correctly...");
+    }
+}
+
+class SessionStorageTestimonialDAO extends TestimonialDAO{
+    constructor(){
+        super();
+        this.database = sessionStorage;
+    }
+    store(arrayOfTestimonials){
+        this.database.setItem("testimonies", JSON.stringify(arrayOfTestimonials));
+    }
+    retrieve(){
+        const stringTestimonies = this.database.getItem("testimonies");
+        const objectTestimonies = JSON.parse(stringTestimonies);
+        return objectTestimonies;
+    }
+}
+class CookieStorageTestimonialDAO extends TestimonialDAO{
+    constructor(){
+        super();
+        this.database = document.cookie;
+    }
+    store(arrayOfTestimonials){
+        document.cookie = 'testimonies=' + JSON.stringify(arrayOfTestimonials) + '; SameSite=Lax; Secure;';
+    }
+    retrieve(){
+        const cookieValue = document.cookie
+        .split("; ")
+        .find((row) => row.startsWith("testimonies="));
+    }
+}
+
+class SessionStorageReferenceDAO extends ReferenceDAO{
+    constructor(){
+        super();
+        this.database = sessionStorage;
+    }
+    store(arrayOfReferences){}
+    retrieve(){}
+}
+class CookieStorageReferenceDAO extends ReferenceDAO{
+    constructor(){
+        super();
+        this.database = document.cookie;
+    }
+    store(arrayOfReferences){}
+    retrieve(){}
+}
+
+function CreateTestimonial(){
+
+}
+
+const test = new SessionStorageTestimonialDAO();
+test.store(TestimonialDAO.seeds);
+console.log("test.retrieve()");
+console.log(test.retrieve()[2].comment);
