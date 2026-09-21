@@ -70,6 +70,10 @@ class DatabseObject{
     }
 }
 
+//TESTIMONALS EXPECT THE FOLLOWING:
+// A REFERENCE !OBJECT!
+// AN ARRAY OF COMMENTS
+// A RATING 1 THROUGH 5
 class Testimonial extends DatabseObject{
     constructor(newReference, newComment, newRating){
         super();
@@ -80,16 +84,6 @@ class Testimonial extends DatabseObject{
     toString(){
         return this.comment + " - " + this.reference + " " + this.rating;
     }
-    // static create(params){
-    //     const {reference, comment, rating} = params;
-    //     const newTestimonial = new Testimonial(reference, comment, rating);
-    //     return newTestimonial;
-    // }
-    // The above is Javascript Object Destructuring, below does a similar thing
-    // static create(newReferenceObj, newComment, newRating){
-    //      const newObj = new Testimonial(newReferenceObj, newComment, newRating);
-    //      return newObj;
-    // }
 }
 
 class Reference extends DatabseObject{
@@ -100,40 +94,30 @@ class Reference extends DatabseObject{
         this.email = newEmail;
     }
     toString(){
-        if(company){
+        if(this.company){
             return "Name: " + this.name + " Company: " + this.company + " Contact: " + this.email;
         }
         else{
             return "Name: " + this.name + " Contact: " + this.email;
         }
     }
-    // static create(params){
-    //     const {name, company, email} = params;
-    //     const newReference = new Reference(name, company, email);
-    //     return newReference;
-    // }
-    // The above is Javascript Object Destructuring, below does a similar thing
-    // static create(newName, newCompany, newEmail){
-    //      const newObj = new Reference(newName, newCompany, newEmail);
-    //      return newObj;
-    // }
 }
 
 class TestimonialDAO{
     static seeds = [
         {
             reference: new Reference("Jeff", "SillyHut", "jeff@jeffcloud.com"),
-            comment: "I'm commenting!",
+            comment: ["I'm commenting!"],
             rating: 100,
         },
         {
             reference: new Reference("Tom", "EB Games", "Tom@jeffcloud.com"),
-            comment: "I'm also commenting!",
+            comment: ["I'm also commenting!"],
             rating: 80,
         },
         {
             reference: new Reference("Doug", "Gamestop", "Doug@jeffcloud.com"),
-            comment: "I'm the third strongest mole in this dungeon.",
+            comment: ["I'm the third strongest mole in this dungeon."],
             rating: 90,
         },
     ]
@@ -146,23 +130,6 @@ class TestimonialDAO{
 }
 
 class ReferenceDAO{
-    static seeds = [
-        {
-            name: "Jeff",
-            company: "SillyHut",
-            email: "jeff@jeffcloud.com",
-        },
-        {
-            name: "Tom",
-            company: "SillyHut",
-            email: "Tom@jeffcloud.com",
-        },
-        {
-            name: "Doug",
-            company: "SillyHut",
-            email: "Doug@jeffcloud.com",
-        },
-    ]
     retrieve(){
         throw new Error("Somebody didn't implement something correctly...");
     }
@@ -189,6 +156,11 @@ class SessionStorageReferenceDAO extends ReferenceDAO{
         const newReference = new Reference(name, company, email);
         return newReference;
     }
+    // The above is Javascript Object Destructuring, below does a similar thing
+    // static create(newReferenceObj, newComment, newRating){
+    //      const newObj = new Testimonial(newReferenceObj, newComment, newRating);
+    //      return newObj;
+    // }
 }
 
 class SessionStorageTestimonialDAO extends TestimonialDAO{
@@ -256,3 +228,4 @@ class CreateTestimonialService{}
 const newArray = TestimonialDAO.seeds.map(seed => SessionStorageTestimonialDAO.create(seed));
 //.map calls a function on each element ("seed") of the seeds array- in this case: create()
 console.log(newArray);
+console.log(newArray[1].toString());
