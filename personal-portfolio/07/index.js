@@ -73,7 +73,7 @@ class DatabseObject{
 //TESTIMONALS EXPECT THE FOLLOWING:
 // A REFERENCE !OBJECT!
 // AN ARRAY OF COMMENTS
-// A RATING 1 THROUGH 5
+// A RATING 1 THROUGH 5 AS AN INTEGER
 class Testimonial extends DatabseObject{
     constructor(newReference, newComment, newRating){
         super();
@@ -82,7 +82,19 @@ class Testimonial extends DatabseObject{
         this.rating = newRating;
     }
     toString(){
-        return this.comment + " - " + this.reference.name + " " + this.rating;
+        return this.comment + " " + this.rating + " star(s). - " + this.reference.toString() ;
+    }
+    static create(params){
+        let {reference, comment, rating} = params;
+        //TURN REFERENCE FROM GENERIC OBJECT, TO REFERENCE OBJECT
+        if(!(reference instanceof Reference)){
+            reference = Reference.create(reference)
+        }
+        //TURN RATING FROM STRING TO INT
+        rating = parseInt(rating, 10);
+        const newTestimonial = new Testimonial(reference, comment, rating);
+        return newTestimonial;
+        //FOR USE WITH .MAP FUNCTION...
     }
 }
 
@@ -101,6 +113,12 @@ class Reference extends DatabseObject{
             return "Name: " + this.name + " Contact: " + this.email;
         }
     }
+    static create(params){
+        const {name, company, email} = params;
+        const newReference = new Reference(name, company, email);
+        return newReference;
+        //FOR USE WITH .MAP FUNCTION...
+    }
 }
 
 class TestimonialDAO{
@@ -108,17 +126,17 @@ class TestimonialDAO{
         {
             reference: new Reference("Jeff", "SillyHut", "jeff@jeffcloud.com"),
             comment: ["I'm commenting!"],
-            rating: 100,
+            rating: 5,
         },
         {
-            reference: new Reference("Tom", "EB Games", "Tom@jeffcloud.com"),
-            comment: ["I'm also commenting!"],
-            rating: 80,
+            reference: new Reference("Tom", "", "Tom@jeffcloud.com"),
+            comment: ["Well, this is a much longer string... Cool isn't it? Yes well long strings can be fun and are great for testing formatting! Thanks for listening, ol chum."],
+            rating: 4,
         },
         {
             reference: new Reference("Doug", "Gamestop", "Doug@jeffcloud.com"),
             comment: ["I'm the third strongest mole in this dungeon."],
-            rating: 90,
+            rating: 5,
         },
     ]
     store(){
@@ -127,11 +145,7 @@ class TestimonialDAO{
     retrieve(){
         throw new Error("Somebody didn't implement something correctly...");
     }
-    static create(params){
-        const {reference, comment, rating} = params;
-        const newTestimonial = new Testimonial(reference, comment, rating);
-        return newTestimonial;
-    }
+
 }
 
 class ReferenceDAO{
@@ -141,16 +155,6 @@ class ReferenceDAO{
     retrieve(){
         throw new Error("Somebody didn't implement something correctly...");
     }
-    static create(params){
-        const {name, company, email} = params;
-        const newReference = new Reference(name, company, email);
-        return newReference;
-    }
-    // The above is Javascript Object Destructuring, below does a similar thing
-    // static create(newReferenceObj, newComment, newRating){
-    //      const newObj = new Testimonial(newReferenceObj, newComment, newRating);
-    //      return newObj;
-    // }
 }
 
 class SessionStorageReferenceDAO extends ReferenceDAO{
@@ -163,10 +167,16 @@ class SessionStorageReferenceDAO extends ReferenceDAO{
     }
     retrieve(){
         const stringReferences = this.database.getItem("references");
-        const objectReferences = JSON.parse(stringReferences);
+        const objectReferences = JSON.parse(stringReferences)
+
+        const arrayOfReferences = [];
+
+        objectReferences.map((object) => {
+            arrayOfReferences.push(Reference.create(object));
+        });
+
         return objectReferences;
     }
-
 }
 
 class SessionStorageTestimonialDAO extends TestimonialDAO{
@@ -177,7 +187,15 @@ class SessionStorageTestimonialDAO extends TestimonialDAO{
     store(arrayOfTestimonials){
         // get old testimonials from session storage
         this.retrieve().forEach((testimonial) => {
-            arrayOfTestimonials.push(testimonial);
+            if (arrayOfTestimonials[0].reference.name == testimonial.reference.name){
+                testimonial.comment.forEach((newComment) => {
+                    arrayOfTestimonials[0].comment.push(newComment);
+                })
+            }
+            else{
+                arrayOfTestimonials.push(testimonial);
+            }
+
         });
         // overwrite session storage with new array of testimonials
         this.database.setItem("testimonies", JSON.stringify(arrayOfTestimonials));
@@ -188,16 +206,16 @@ class SessionStorageTestimonialDAO extends TestimonialDAO{
         
         const arrayOfTestimonials = [];
 
+        const seedArray = TestimonialDAO.seeds.map(seed => Testimonial.create(seed));
+        if(!objectTestimonies){
+            return seedArray;
+        }
+
         objectTestimonies.map((object) => {
-            arrayOfTestimonials.push(TestimonialDAO.create(object));
+            arrayOfTestimonials.push(Testimonial.create(object));
         });
+
         return arrayOfTestimonials;
-
-        // objectTestimonies.forEach((object) => {
-        //     arrayOfTestimonials.push(SessionStorageTestimonialDAO.create(object));
-        // });
-        // return arrayOfTestimonials;
-
     }
 }
 
@@ -232,52 +250,68 @@ class CookieStorageTestimonialDAO extends TestimonialDAO{
     }
 }
 
+const session = new SessionStorageTestimonialDAO();
+
 class CreateTestimonialService{
     constructor(newTestimonialDAO){
         this.testimonialToBeStored = newTestimonialDAO;
     }
     createTestimonial(){
-        const activeSession = new SessionStorageTestimonialDAO();
-        activeSession.store(testimonialToBeStored);
+        session.store(this.testimonialToBeStored);
+        printTestimonials(session.retrieve());
     }
 }
 
-function getTestimonialFormData(){
+function getTestimonialFormData(session){
     const form = document.getElementById("testimonialForm");
         form.addEventListener("submit", (event) =>{
+            event.preventDefault();
+            
             const formData = new FormData(event.target);
 
-            const nameInput = formData.get("name");
-            const companyInput = formData.get("company");
-            const emailInput = formData.get("email");
+            const name = formData.get("name");
+            const company = formData.get("company");
+            const email = formData.get("email");
 
-            const commentInput = formData.get("comment");
-            const ratingInput = formData.get("rating");
+            const comment = [formData.get("comment")];
+            const rating = formData.get("rating");
 
-            const newReference = ReferenceDAO.create([nameInput, companyInput, emailInput]);
-            const newTestimonial = TestimonialDAO.create([newReference, commentInput, ratingInput]);
-
-            const session = new CreateTestimonialService.store(newTestimonial);
-            // session.store(TestimonialDAO.seeds.map(seed => TestimonialDAO.create(seed)));
+            const newReference = new Reference(name, company, email);
+            const newTestimonial = new Testimonial(newReference, comment, rating);
+            
+            session.store([newTestimonial]);
     });
 }
 
 const testimonialsTarget = document.getElementById("testimonialsTarget");
 
-// getTestimonialFormData();
-// const seedArray = TestimonialDAO.seeds.map(seed => TestimonialDAO.create(seed));
-// printTestimonials(seedArray);
+getTestimonialFormData(session);
+printTestimonials(session.retrieve());
+getAverageRating(session.retrieve());
 
 
 function printTestimonials(arrayOfTestimonials){
     arrayOfTestimonials.forEach((testimonial) => {
+        const listEntry = document.createElement("li");
         const paragraph = document.createElement("p");
         paragraph.textContent = testimonial.toString();
-        testimonialsTarget.appendChild(paragraph);
+        listEntry.appendChild(paragraph);
+        testimonialsTarget.appendChild(listEntry);
     });
 }
 
-
+function getAverageRating(arrayOfTestimonials){
+    let average = 0;
+    arrayOfTestimonials.forEach((testimonial) => {
+        average += testimonial.rating
+    });
+    average /= arrayOfTestimonials.length;
+    // average = average.toString();
+    // average = average.slice(0, 4)
+    console.log(average);
+    
+    document.getElementById("averageRating").textContent = "Average Rating: " + average + " / 5 stars";
+}
 
 const nameInput = document.getElementById("testimonialName");
 const companyInput = document.getElementById("testimonialCompany");
