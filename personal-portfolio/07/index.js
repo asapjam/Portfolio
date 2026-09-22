@@ -238,7 +238,6 @@ class CreateTestimonialService{
 function getTestimonialFormData(session){
     const form = document.getElementById("testimonialForm");
         form.addEventListener("submit", (event) =>{
-            event.preventDefault();
             
             const formData = new FormData(event.target);
 
@@ -293,6 +292,6 @@ for(i = 0; i < 6; i++){
 
 // MAIN
 
-const session = new CookieStorageTestimonialDAO();
+const session = new SessionStorageTestimonialDAO();
 const newTestimonialService = new CreateTestimonialService(session);
 newTestimonialService.createTestimonial();
