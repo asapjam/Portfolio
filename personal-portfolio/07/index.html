@@ -71,10 +71,26 @@
                 <div class="testimonials">
                     <h2>References</h2>
                     <h3>Average Rating:</h3>
-                    <ul class="testimonialsTarget"></ul>
+                    <ul id="testimonialsTarget"></ul>
                 </div>
+
                 <h3>Submit a testimony!</h3>
-                <form method="POST">
+                <form id="testimonialForm">
+                    <!-- REFERENCE PARAMS -->
+                    <label for="name">Name:</label>
+                    <input name="name" type ="text" id="testimonialName" required/>
+                    <label for="company">Company:</label>
+                    <input name="company" type ="text" id="testimonialCompany"/>
+                    <label for="email">Email:</label>
+                    <input name="email" type ="text" id="testimonialEmail"/>
+
+                    <!-- TESTIMONIAL PARAMS -->
+                    <label for="comment">Comment:</label>
+                    <input name="comment" type ="textarea" id="testimonialComment"/>
+                    <label for="rating">Rating:</label>
+                    <select name="rating" required id="testimonialRating">
+                    </select>
+                    <button type="submit">Create Delivery</button>
                 </form>
             </section>
 
